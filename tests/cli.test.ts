@@ -95,3 +95,23 @@ test('course transcript: grouping, move undo redo, delete restoration and import
   assert.match(await cli.handle('read examples/other.svg'), /warning: assigned id rect1.*\nread .*\(7 elements\)/);
   assert.equal(session.document.width,400);
 });
+
+test('invalid input does not reset document, canvas or existing history', async () => {
+  const session = new EditorSession(new FileDocumentStore()), cli = new CommandDispatcher(session);
+  await cli.handle('init'); await cli.handle('create g empty');
+  const before = new SvgCodec().encode(session.document);
+  for (const line of ['canvas 300','canvas 100 -1','init 100 NaN','move empty Infinity 0','set empty fill "unterminated','unknown','create rect r 1 2','scale empty -1']) {
+    assert.match(await cli.handle(line), /^error: [^\n]+$/);
+    assert.equal(new SvgCodec().encode(session.document),before);
+  }
+  assert.equal(await cli.handle('undo'),'edit undone');
+  assert.equal(session.document.has('empty'),false);
+});
+
+test('batch mode continues after errors but returns nonzero; EOF exits', () => {
+  const result = spawnSync(process.execPath,['--import','tsx','src/main.ts'],{
+    input:'init\ncreate box x\ncreate g after\ntree\n', encoding:'utf8',
+  });
+  assert.equal(result.status,1); assert.match(result.stdout,/unknown shape type: box/);
+  assert.match(result.stdout,/g#after/);
+});

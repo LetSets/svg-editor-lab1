@@ -3,6 +3,6 @@ import type { SvgDocument } from '../domain/SvgDocument.js';
 
 export class ScaleCommand extends EditCommand {
   constructor(private readonly id: string, private readonly factor: number) { super(); }
-  get description(): string { return `${this.id} scaled`; }
+  get description(): string { return `${this.id} scaled by ${this.factor}`; }
   protected apply(document: SvgDocument): void { document.find(this.id).scale(this.factor); }
 }

@@ -41,3 +41,22 @@ test('id uniqueness, cycle checks, attribute validation and factory boundaries',
   assert.throws(() => factory.create('box', 'x', []), /unknown shape type/);
   assert.throws(() => factory.create('rect','x',['0','0','-1','1']), /invalid number/);
 });
+
+test('cross-parent grouping uses lowest common ancestor and document order', () => {
+  const doc = new SvgDocument();
+  doc.add(new Group('left')); doc.add(new Group('right'));
+  doc.add(new Rect('a', 0, 0, 1, 1), 'left'); doc.add(new Rect('b', 0, 0, 1, 1), 'right');
+  doc.group('both', ['b','a']);
+  assert.deepEqual(doc.children.map(s => s.id), ['both','left','right']);
+  assert.deepEqual(doc.find('both').children.map(s => s.id), ['a','b']);
+});
+
+test('front/back follow SVG painting order and addto appends without changing geometry', () => {
+  const doc = new SvgDocument(); doc.add(new Group('g'));
+  for (const id of ['a','b','c']) doc.add(new Rect(id, 3, 4, 5, 6));
+  doc.reorder('a',true); assert.equal(doc.children.at(-1)?.id, 'a');
+  doc.reorder('c',false); assert.equal(doc.children[0].id, 'c');
+  doc.addTo('g','c'); doc.addTo('g','a');
+  assert.deepEqual(doc.find('g').children.map(s => s.id), ['c','a']);
+  assert.deepEqual(doc.find('a').geometry(), {x:'3',y:'4',width:'5',height:'6'});
+});

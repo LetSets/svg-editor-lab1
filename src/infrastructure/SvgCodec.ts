@@ -1,7 +1,7 @@
 import { DOMParser, XMLSerializer, DOMImplementation } from '@xmldom/xmldom';
 import { SvgDocument } from '../domain/SvgDocument.js';
 import { ShapeFactory } from '../domain/ShapeFactory.js';
-import type { Shape } from '../domain/Shape.js';
+import { Shape } from '../domain/Shape.js';
 import { Group } from '../domain/Group.js';
 
 export class SvgCodec {
@@ -20,7 +20,7 @@ export class SvgCodec {
     if (roots.filter(node => node?.nodeType === 1).length !== 1 || roots.some(node => node?.nodeType === 3 && node.nodeValue?.trim())) throw new Error('invalid SVG XML');
     const rootAttrs = this.attributes(root);
     for (const key of Object.keys(rootAttrs)) if (!['width','height','viewBox','xmlns','version'].includes(key)) throw new Error(`unsupported SVG root attribute: ${key}`);
-    const document = new SvgDocument(rootAttrs.width === undefined ? 800 : Number(rootAttrs.width), rootAttrs.height === undefined ? 600 : Number(rootAttrs.height));
+    const document = new SvgDocument(rootAttrs.width === undefined ? 800 : Shape.number(rootAttrs.width), rootAttrs.height === undefined ? 600 : Shape.number(rootAttrs.height));
     if (rootAttrs.viewBox !== undefined) {
       const view = rootAttrs.viewBox.trim().split(/[\s,]+/).map(Number);
       if (view.length !== 4 || view[0] !== 0 || view[1] !== 0 || view[2] !== document.width || view[3] !== document.height) throw new Error('unsupported SVG viewBox: expected 0 0 width height');
@@ -76,7 +76,7 @@ export class SvgCodec {
     return '<?xml version="1.0" encoding="UTF-8"?>\n' + new XMLSerializer().serializeToString(xml) + '\n';
   }
   private attributes(element: Element): Record<string, string> {
-    const result: Record<string, string> = {};
+    const result: Record<string, string> = Object.create(null);
     for (let i = 0; i < element.attributes.length; i++) {
       const attr = element.attributes.item(i)!;
       result[attr.name] = attr.value;

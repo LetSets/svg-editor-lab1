@@ -31,7 +31,7 @@ test('auto ids avoid explicit ids later in file; duplicates and unsupported XML 
     '<!DOCTYPE svg [<!ENTITY x SYSTEM "file:///etc/passwd">]><svg/>',
     '<svg width="100" height="100" viewBox="0 0 50 50"/>',
     '<svg><text id="t"><tspan>nested</tspan></text></svg>',
-  ]) assert.throws(() => codec.decode(source), undefined, source);
+  ]) assert.throws(() => codec.decode(source), source);
 });
 
 test('file IO and session boundaries commit only on success', async () => {
@@ -58,4 +58,10 @@ test('file IO and session boundaries commit only on success', async () => {
     assert.match(await readFile(path, 'utf8'), /x="5"/);
     assert.deepEqual((await readdir(dir)).sort(), ['bad.svg','demo.svg']);
   } finally { await rm(dir, {recursive: true, force: true}); }
+});
+
+test('malformed dimensions and unsupported attributes are rejected explicitly', () => {
+  for (const source of ['<svg width=""/>','<svg width="100px"/>','<svg><rect __proto__="hidden"/></svg>','<svg><rect transform="scale(2)"/></svg>']) {
+    assert.throws(() => codec.decode(source), source);
+  }
 });
