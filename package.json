@@ -1,0 +1,6 @@
+{
+  "name": "svg-editor-lab1", "version": "0.1.0", "private": true, "type": "module",
+  "scripts": {"build": "tsc", "check": "tsc --noEmit", "cli": "tsx src/main.ts", "test": "tsx --test tests/*.test.ts"},
+  "dependencies": {"@xmldom/xmldom": "^0.8.11"},
+  "devDependencies": {"@types/node": "^22.0.0", "tsx": "^4.20.0", "typescript": "^5.9.0"}
+}
