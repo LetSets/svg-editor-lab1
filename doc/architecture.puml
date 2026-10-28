@@ -1,0 +1,24 @@
+@startuml
+!pragma layout smetana
+skinparam defaultFontName SansSerif
+package "cli" as cli
+package "application" as app
+package "commands" as cmd
+package "domain" as domain
+package "ports" as ports
+package "infrastructure" as infra
+component "main.ts（装配入口）" as main
+cli --> app
+cli --> cmd
+cli --> domain : 只读显示、创建与数值校验
+app --> cmd
+app --> domain
+app --> ports
+cmd --> domain
+ports --> domain
+infra --> ports
+infra --> domain
+main --> cli
+main --> app
+main --> infra
+@enduml
